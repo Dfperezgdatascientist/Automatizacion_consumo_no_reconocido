@@ -1,0 +1,983 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DCELIP · Carga de Presupuestos Comerciales</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --primary: #003366;
+  --primary-hover: #002244;
+  --secondary: #1A5FA8;
+  --accent: #0082C8;
+  --dark: #1C2B3A;
+  --mid: #6B7C93;
+  --light: #EFF3F8;
+  --bg: #F5F7FA;
+  --white: #FFFFFF;
+  --border: #D6DEE8;
+  --success: #1A7F5A;
+  --success-bg: #F0F9F5;
+  --success-border: #A8D9C3;
+  --error: #C0392B;
+  --error-bg: #FDF0EF;
+  --error-border: #EAAEA8;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'IBM Plex Sans',sans-serif;background:var(--bg);color:var(--dark);min-height:100vh}
+
+/* ── SCREENS ── */
+.screen{display:none}
+.screen.active{display:block}
+
+/* ══════════════════════════════
+   SCREEN: LOGIN
+══════════════════════════════ */
+#screen-login{
+  min-height:100vh;
+  background-color:#E2E8F0;
+  background-image:radial-gradient(#B8C4D4 1px, transparent 0);
+  background-size:32px 32px;
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  padding:2rem;
+}
+.login-card{
+  background:var(--white);
+  width:100%;max-width:420px;
+  padding:48px 40px;
+  border-radius:6px;
+  border:1px solid var(--border);
+  box-shadow:0 4px 16px rgba(0,51,102,0.07);
+}
+.login-brand{display:flex;align-items:center;gap:12px;justify-content:center;margin-bottom:28px}
+.login-logomark{
+  width:40px;height:40px;background:var(--primary);border-radius:4px;
+  display:flex;align-items:center;justify-content:center;
+  color:#fff;font-weight:600;font-size:13px;letter-spacing:1px;flex-shrink:0
+}
+.login-brandname{font-size:13px;font-weight:600;color:var(--primary);line-height:1.3}
+.login-brandname span{display:block;font-weight:400;font-size:11px;color:var(--mid)}
+.login-title{font-size:18px;font-weight:600;color:var(--dark);text-align:center;margin-bottom:6px}
+.login-subtitle{font-size:12px;color:var(--mid);text-align:center;margin-bottom:28px;padding-bottom:24px;border-bottom:1px solid var(--light)}
+.field-label{display:block;font-size:12px;font-weight:500;color:var(--mid);margin-bottom:5px}
+.field-input{
+  width:100%;padding:11px 14px;
+  border:1px solid #C8D3E0;border-radius:4px;
+  font-family:'IBM Plex Sans',sans-serif;font-size:14px;color:var(--dark);
+  background:#fff;outline:none;transition:border-color .15s, box-shadow .15s
+}
+.field-input::placeholder{color:#A0AEBB}
+.field-input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(0,130,200,0.12)}
+.field-group{margin-bottom:16px}
+.btn-login{
+  width:100%;padding:12px;margin-top:8px;
+  background:var(--primary);color:#fff;border:none;border-radius:4px;
+  font-family:'IBM Plex Sans',sans-serif;font-size:14px;font-weight:600;
+  cursor:pointer;letter-spacing:.2px;transition:background .15s
+}
+.btn-login:hover{background:var(--primary-hover)}
+.btn-login:active{transform:translateY(1px)}
+.login-error{
+  display:none;margin-top:12px;
+  padding:10px 14px;border-radius:4px;
+  background:var(--error-bg);border:1px solid var(--error-border);
+  font-size:12px;color:var(--error);
+  display:none;align-items:center;gap:8px
+}
+.login-badge{
+  text-align:center;margin-top:20px;
+  font-size:11px;color:var(--mid);
+}
+.login-badge span{
+  background:var(--light);padding:3px 10px;border-radius:3px;
+  display:inline-flex;align-items:center;gap:4px
+}
+.login-footer-text{
+  margin-top:24px;text-align:center;
+  font-size:11px;color:#A0AEBB
+}
+
+/* ══════════════════════════════
+   LAYOUT: DASHBOARD (post-login)
+══════════════════════════════ */
+.app-layout{display:flex;height:100vh;overflow:hidden}
+
+/* Sidebar */
+.sidebar{
+  width:240px;flex-shrink:0;
+  background:var(--white);
+  border-right:1px solid var(--border);
+  display:flex;flex-direction:column;
+  padding:0;
+}
+.sidebar-brand{
+  padding:20px;
+  border-bottom:1px solid var(--light);
+  display:flex;align-items:center;gap:10px
+}
+.sidebar-logomark{
+  width:30px;height:30px;background:var(--primary);border-radius:4px;
+  display:flex;align-items:center;justify-content:center;
+  color:#fff;font-weight:600;font-size:11px;flex-shrink:0
+}
+.sidebar-brandname{font-size:13px;font-weight:600;color:var(--primary);line-height:1.3}
+.sidebar-brandname span{display:block;font-size:10px;font-weight:400;color:var(--mid)}
+.nav-section{padding:16px 12px 8px;font-size:10px;font-weight:600;color:var(--mid);letter-spacing:.8px;text-transform:uppercase}
+.nav-item{
+  display:flex;align-items:center;gap:10px;
+  padding:9px 16px;margin:1px 8px;
+  border-radius:4px;font-size:13px;font-weight:500;
+  color:var(--mid);cursor:pointer;transition:all .15s
+}
+.nav-item svg{flex-shrink:0;opacity:.7}
+.nav-item:hover{background:var(--bg);color:var(--dark)}
+.nav-item.active{background:var(--light);color:var(--primary)}
+.nav-item.active svg{opacity:1}
+.sidebar-footer{
+  margin-top:auto;padding:16px;
+  border-top:1px solid var(--light);
+  font-size:11px;color:var(--mid);line-height:1.6
+}
+.user-chip{
+  display:flex;align-items:center;gap:8px;
+  margin-bottom:10px;
+}
+.user-avatar{
+  width:28px;height:28px;background:var(--primary);
+  border-radius:50%;display:flex;align-items:center;justify-content:center;
+  color:#fff;font-size:11px;font-weight:600;flex-shrink:0
+}
+
+/* Header */
+.app-header{
+  height:56px;background:var(--white);
+  border-bottom:1px solid var(--border);
+  display:flex;align-items:center;
+  justify-content:space-between;
+  padding:0 28px;flex-shrink:0
+}
+.header-title{font-size:14px;font-weight:600;color:var(--dark)}
+.header-right{display:flex;align-items:center;gap:12px}
+.header-badge{
+  font-size:11px;color:var(--mid);
+  background:var(--light);padding:3px 10px;border-radius:3px
+}
+.btn-logout{
+  font-size:12px;color:var(--mid);background:none;border:none;
+  cursor:pointer;font-family:'IBM Plex Sans',sans-serif;
+  padding:4px 8px;border-radius:3px;transition:all .15s
+}
+.btn-logout:hover{background:var(--light);color:var(--dark)}
+
+/* Main scroll */
+.app-main{flex:1;overflow-y:auto;display:flex;flex-direction:column}
+.main-body{padding:28px 32px;flex:1}
+
+/* ══════════════════════════════
+   STEPPER
+══════════════════════════════ */
+.stepper-wrap{
+  background:var(--white);border:1px solid var(--border);
+  border-radius:6px;padding:16px 24px;
+  display:flex;align-items:center;
+  margin-bottom:24px;
+}
+.step-item{display:flex;align-items:center;gap:8px;flex:1}
+.step-circle{
+  width:26px;height:26px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:12px;font-weight:600;flex-shrink:0;
+  transition:all .2s
+}
+.step-circle.pending{background:var(--light);color:var(--mid);border:1px solid var(--border)}
+.step-circle.active{background:var(--primary);color:#fff}
+.step-circle.done{background:var(--success);color:#fff}
+.step-name{font-size:13px;font-weight:500;transition:color .2s}
+.step-name.pending{color:var(--mid)}
+.step-name.active{color:var(--primary)}
+.step-name.done{color:var(--success)}
+.step-line{flex:1;height:2px;background:var(--border);margin:0 8px;transition:background .2s}
+.step-line.done{background:var(--success)}
+
+/* ══════════════════════════════
+   STEP PANELS
+══════════════════════════════ */
+.step-panel{display:none}
+.step-panel.active{display:block}
+
+.content-grid{display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1fr);gap:20px}
+.card{
+  background:var(--white);border:1px solid var(--border);
+  border-radius:6px;padding:24px
+}
+.card-title{font-size:15px;font-weight:600;color:var(--dark);margin-bottom:4px}
+.card-sub{font-size:12px;color:var(--mid);margin-bottom:20px}
+
+/* Selects & inputs reutilizables */
+.ui-select{
+  width:100%;padding:10px 14px;
+  border:1px solid #C8D3E0;border-radius:4px;
+  font-family:'IBM Plex Sans',sans-serif;font-size:13px;color:var(--dark);
+  background:#fff;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236B7C93' stroke-width='1.5' fill='none'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 12px center;
+  appearance:none;outline:none;cursor:pointer
+}
+.ui-select:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(0,130,200,0.1)}
+
+.info-panel{
+  background:var(--light);border-left:3px solid var(--accent);
+  border-radius:0 4px 4px 0;padding:12px 14px;margin-top:14px
+}
+.info-panel-title{font-size:10px;font-weight:600;color:var(--secondary);letter-spacing:.6px;text-transform:uppercase;margin-bottom:5px}
+.info-panel-body{font-size:12px;color:var(--dark);line-height:1.6}
+.info-panel-cols{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px}
+.col-tag{
+  font-size:11px;font-family:'IBM Plex Mono',monospace;
+  background:#fff;border:1px solid var(--border);
+  padding:2px 7px;border-radius:3px;color:var(--secondary)
+}
+
+/* Upload zone */
+.upload-zone{
+  border:1.5px dashed #B0BDCC;border-radius:6px;
+  padding:36px 20px;text-align:center;
+  background:#FAFBFD;cursor:pointer;
+  transition:all .15s
+}
+.upload-zone:hover{border-color:var(--accent);background:var(--light)}
+.upload-zone-icon{font-size:32px;color:var(--mid);margin-bottom:10px}
+.upload-zone-title{font-size:13px;font-weight:500;color:var(--dark);margin-bottom:4px}
+.upload-zone-sub{font-size:11px;color:var(--mid)}
+.upload-preview{
+  display:none;margin-top:14px;
+  background:var(--light);border:1px solid var(--border);
+  border-radius:4px;padding:10px 14px;
+  align-items:center;gap:12px
+}
+.upload-preview.visible{display:flex}
+.upload-file-icon{color:var(--success);font-size:20px}
+.upload-file-name{font-size:13px;font-weight:500;color:var(--dark)}
+.upload-file-meta{font-size:11px;color:var(--mid);font-family:'IBM Plex Mono',monospace;margin-top:2px}
+.btn-template{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:7px 14px;margin-top:14px;
+  border:1px solid var(--secondary);border-radius:4px;
+  font-size:12px;font-weight:500;color:var(--secondary);
+  background:transparent;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;
+  transition:all .15s
+}
+.btn-template:hover{background:var(--light)}
+
+/* Validation results */
+.val-ok{
+  background:var(--success-bg);border:1px solid var(--success-border);
+  border-radius:6px;padding:16px 18px
+}
+.val-err{
+  background:var(--error-bg);border:1px solid var(--error-border);
+  border-radius:6px;padding:16px 18px;display:none
+}
+.val-err.visible{display:block}
+.val-header{display:flex;align-items:center;gap:8px;margin-bottom:12px}
+.val-icon-ok{color:var(--success);font-size:18px}
+.val-icon-err{color:var(--error);font-size:18px}
+.val-title-ok{font-size:14px;font-weight:600;color:var(--success)}
+.val-title-err{font-size:14px;font-weight:600;color:var(--error)}
+.val-table{width:100%;font-size:12px;border-collapse:collapse}
+.val-table tr{border-bottom:1px solid rgba(0,0,0,.06)}
+.val-table tr:last-child{border-bottom:none}
+.val-table td{padding:7px 0}
+.val-table td:first-child{color:var(--mid);width:38%}
+.val-table .ok{color:var(--success);font-weight:500}
+.err-table{width:100%;font-size:12px;border-collapse:collapse;margin-top:8px}
+.err-table th{text-align:left;font-size:11px;font-weight:600;color:var(--mid);padding:5px 8px;background:rgba(192,57,43,.06);border-bottom:1px solid var(--error-border)}
+.err-table td{padding:6px 8px;color:var(--dark);border-bottom:1px solid var(--error-border)}
+.err-table tr:last-child td{border-bottom:none}
+
+/* Confirmation seal */
+.seal{border:1.5px solid var(--primary);border-radius:6px;overflow:hidden}
+.seal-header{
+  background:var(--primary);padding:14px 18px;
+  display:flex;align-items:center;gap:10px
+}
+.seal-header-icon{color:#4CAF82;font-size:20px}
+.seal-header-text{color:#fff;font-size:14px;font-weight:600;letter-spacing:.3px}
+.seal-body{padding:18px}
+.seal-row{
+  display:flex;justify-content:space-between;align-items:flex-start;
+  padding:7px 0;border-bottom:1px solid var(--light);font-size:12px
+}
+.seal-row:last-of-type{border-bottom:none}
+.seal-label{color:var(--mid);flex-shrink:0;width:38%}
+.seal-value{color:var(--dark);font-weight:500;text-align:right}
+.seal-value.mono{font-family:'IBM Plex Mono',monospace;font-size:11px}
+.seal-value.ok{color:var(--success)}
+.seal-divider{height:1px;background:var(--border);margin:10px 0}
+.seal-footer-row{
+  display:flex;justify-content:space-between;align-items:center;
+  margin-top:12px;padding-top:10px;border-top:1px solid var(--light)
+}
+.seal-cert{font-size:11px;color:var(--mid);font-style:italic}
+.seal-stamp{
+  font-size:11px;font-weight:600;color:var(--success);
+  display:flex;align-items:center;gap:4px;letter-spacing:.3px
+}
+
+/* Sidebar history */
+.history-item{
+  display:flex;align-items:center;gap:10px;
+  padding:10px 0;border-bottom:1px solid var(--light);
+  font-size:12px
+}
+.history-item:last-child{border-bottom:none}
+.history-icon{
+  width:30px;height:30px;background:var(--light);border-radius:4px;
+  display:flex;align-items:center;justify-content:center;
+  color:var(--mid);flex-shrink:0;font-size:14px
+}
+.history-code{font-weight:500;color:var(--dark)}
+.history-time{color:var(--mid)}
+.stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px}
+.stat-box{background:var(--bg);border:1px solid var(--border);border-radius:4px;padding:12px}
+.stat-label{font-size:11px;color:var(--mid);margin-bottom:4px}
+.stat-value{font-size:22px;font-weight:600;color:var(--dark)}
+
+/* Buttons row */
+.btn-row{display:flex;justify-content:flex-end;gap:10px;margin-top:20px}
+.btn-back{
+  padding:9px 18px;background:transparent;border:1px solid var(--border);
+  border-radius:4px;font-family:'IBM Plex Sans',sans-serif;
+  font-size:13px;color:var(--mid);cursor:pointer;transition:all .15s
+}
+.btn-back:hover{background:var(--light);color:var(--dark)}
+.btn-next{
+  padding:9px 20px;background:var(--primary);color:#fff;border:none;
+  border-radius:4px;font-family:'IBM Plex Sans',sans-serif;
+  font-size:13px;font-weight:600;cursor:pointer;transition:background .15s;
+  display:flex;align-items:center;gap:6px
+}
+.btn-next:hover{background:var(--primary-hover)}
+.btn-outline-pri{
+  padding:9px 18px;background:transparent;
+  border:1px solid var(--primary);border-radius:4px;
+  font-family:'IBM Plex Sans',sans-serif;font-size:13px;
+  font-weight:500;color:var(--primary);cursor:pointer;transition:all .15s
+}
+.btn-outline-pri:hover{background:var(--light)}
+
+/* Toast */
+.toast{
+  position:fixed;bottom:24px;right:24px;z-index:999;
+  background:var(--dark);color:#fff;
+  padding:12px 18px;border-radius:5px;
+  font-size:13px;font-family:'IBM Plex Sans',sans-serif;
+  display:none;align-items:center;gap:8px;
+  box-shadow:0 4px 16px rgba(0,0,0,.18)
+}
+.toast.show{display:flex}
+</style>
+</head>
+<body>
+
+<!-- ════════════════════════════
+     SCREEN: LOGIN
+════════════════════════════ -->
+<div id="screen-login" class="screen active">
+  <div style="min-height:100vh;background-color:#E2E8F0;background-image:radial-gradient(#B8C4D4 1px,transparent 0);background-size:32px 32px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2rem">
+    <div class="login-card">
+      <div class="login-brand">
+        <div class="login-logomark">DC</div>
+        <div class="login-brandname">
+          Diners Club Ecuador
+          <span>DCELIP · Lakehouse Intelligence</span>
+        </div>
+      </div>
+      <div class="login-title">Carga de Presupuestos Comerciales</div>
+      <div class="login-subtitle">Acceso restringido · Equipo de Planeación</div>
+      <div class="field-group">
+        <label class="field-label" for="l-user">Usuario corporativo</label>
+        <input class="field-input" type="text" id="l-user" placeholder="ej. s.hernandez" value="planeacion" autocomplete="username">
+      </div>
+      <div class="field-group">
+        <label class="field-label" for="l-pass">Contraseña</label>
+        <input class="field-input" type="password" id="l-pass" placeholder="••••••••" value="pstos2026" autocomplete="current-password">
+      </div>
+      <button class="btn-login" onclick="doLogin()">Ingresar al sistema</button>
+      <div class="login-error" id="login-error">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        Credenciales incorrectas. Verifique usuario y contraseña.
+      </div>
+      <div class="login-badge">
+        <span>
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          Acceso restringido · Planeación
+        </span>
+      </div>
+    </div>
+    <div class="login-footer-text">Diners Club Ecuador · Uso interno · 2026</div>
+  </div>
+</div>
+
+<!-- ════════════════════════════
+     SCREEN: APP
+════════════════════════════ -->
+<div id="screen-app" class="screen">
+  <div class="app-layout">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+      <div class="sidebar-brand">
+        <div class="sidebar-logomark">DC</div>
+        <div class="sidebar-brandname">
+          DCELIP Upload
+          <span>Planeación · 2026</span>
+        </div>
+      </div>
+      <div class="nav-section">Principal</div>
+      <div class="nav-item" onclick="showToast('Dashboard en desarrollo')">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+        Dashboard
+      </div>
+      <div class="nav-item active">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        Carga de presupuestos
+      </div>
+      <div class="nav-item" onclick="showToast('Historial en desarrollo')">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        Historial de cargas
+      </div>
+      <div class="nav-item" onclick="showToast('Documentación en desarrollo')">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        Documentación
+      </div>
+      <div class="sidebar-footer">
+        <div class="user-chip">
+          <div class="user-avatar">PL</div>
+          <div>
+            <div style="font-size:12px;font-weight:500;color:var(--dark)">planeacion</div>
+            <div style="font-size:10px;color:var(--mid)">Equipo Planeación</div>
+          </div>
+        </div>
+        Diners Club Ecuador<br>Uso interno · 2026
+      </div>
+    </aside>
+
+    <!-- MAIN -->
+    <div class="app-main">
+      <header class="app-header">
+        <div class="header-title">Carga de Presupuestos Comerciales</div>
+        <div class="header-right">
+          <div class="header-badge" id="header-status">Paso 1 de 4 — Selección</div>
+          <button class="btn-logout" onclick="doLogout()">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:-1px;margin-right:3px"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+            Cerrar sesión
+          </button>
+        </div>
+      </header>
+
+      <div class="main-body">
+
+        <!-- STEPPER -->
+        <div class="stepper-wrap">
+          <div class="step-item">
+            <div class="step-circle active" id="sc1">1</div>
+            <span class="step-name active" id="sn1">Selección</span>
+          </div>
+          <div class="step-line" id="sl1"></div>
+          <div class="step-item">
+            <div class="step-circle pending" id="sc2">2</div>
+            <span class="step-name pending" id="sn2">Carga</span>
+          </div>
+          <div class="step-line" id="sl2"></div>
+          <div class="step-item">
+            <div class="step-circle pending" id="sc3">3</div>
+            <span class="step-name pending" id="sn3">Validación</span>
+          </div>
+          <div class="step-line" id="sl3"></div>
+          <div class="step-item">
+            <div class="step-circle pending" id="sc4">4</div>
+            <span class="step-name pending" id="sn4">Confirmación</span>
+          </div>
+        </div>
+
+        <!-- ── PASO 1: SELECCIÓN ── -->
+        <div class="step-panel active" id="panel-1">
+          <div class="content-grid">
+            <div class="card">
+              <div class="card-title">Selección de tipo de presupuesto</div>
+              <div class="card-sub">Seleccione la categoría y tipo de presupuesto a cargar</div>
+              <label class="field-label">Tipo de presupuesto</label>
+              <select class="ui-select" id="psto-select" onchange="onSelectPsto()">
+                <option value="">— Seleccione un tipo —</option>
+                <optgroup label="A — GDT Consumo">
+                  <option value="001|Base Ventas Completo Zona Socio|6|ZONA, CANAL, PRODUCTO, MES, PPTO_USD, PCT_DIST|Cuadre por zona obligatorio. Sin duplicados por ZONA+MES.">HU-PPTO-001 · Base Ventas Completo Zona Socio</option>
+                  <option value="002|Base Ventas Canal Comercial|5|CANAL, PRODUCTO, MES, PPTO_USD, PCT_DIST|Distribución 100% por canal requerida.">HU-PPTO-002 · Base Ventas Canal Comercial</option>
+                  <option value="003|Transacciones por Categoría|4|CATEGORIA, MES, TRANS_N, TRANS_USD|Sin celdas vacías en columnas requeridas.">HU-PPTO-003 · Transacciones por Categoría</option>
+                  <option value="004|Tasas de Aprobación|4|SEGMENTO, MES, TASA_APR, TASA_REC|Valores entre 0 y 1 (porcentaje decimal).">HU-PPTO-004 · Tasas de Aprobación</option>
+                  <option value="005|Consumo Internacional|5|PAIS, MONEDA, MES, PPTO_USD, TIPO_CAMBIO|Tipos de cambio deben ser positivos.">HU-PPTO-005 · Consumo Internacional</option>
+                </optgroup>
+                <optgroup label="B — SSFF">
+                  <option value="006|Estados Financieros|12|COD_CUENTA, DESC, ENE, FEB, MAR, ABR, MAY, JUN, JUL, AGO, SEP, OCT|Suma por línea contable validada.">HU-PPTO-006 · Estados Financieros</option>
+                </optgroup>
+                <optgroup label="C — UGI Adquisición">
+                  <option value="007|Nuevas Tarjetas Zona|4|ZONA, PRODUCTO, MES, N_TARJETAS|Enteros positivos únicamente.">HU-PPTO-007 · Nuevas Tarjetas Zona</option>
+                  <option value="008|Activación Primeros 90 días|4|SEGMENTO, MES, N_ACTIVACIONES, TASA_ACT|Tasa entre 0 y 1.">HU-PPTO-008 · Activación Primeros 90 días</option>
+                  <option value="009|Cartera Adquisición|5|ZONA, PRODUCTO, MES, CARTERA_USD, N_CLIENTES|Cartera en USD, entero.">HU-PPTO-009 · Cartera Adquisición</option>
+                  <option value="010|Límite Promedio Asignado|4|SEGMENTO, MES, LIMITE_PROM, N_TARJETAS|Límite promedio en USD.">HU-PPTO-010 · Límite Promedio Asignado</option>
+                </optgroup>
+                <optgroup label="D — Cancelaciones">
+                  <option value="011|Cancelaciones Voluntarias|5|MOTIVO, SEGMENTO, MES, CANTIDAD, TASA_CANCEL|Sin duplicados por SEGMENTO+MES+MOTIVO.">HU-PPTO-011 · Cancelaciones Voluntarias</option>
+                  <option value="012|Cancelaciones por Mora|4|SEGMENTO, MES, CANTIDAD, TASA_MORA|Tasa mora entre 0 y 1.">HU-PPTO-012 · Cancelaciones por Mora</option>
+                </optgroup>
+                <optgroup label="E — UGI Stock y Ratios">
+                  <option value="013|Stock Activo por Producto|4|PRODUCTO, MES, STOCK_N, STOCK_USD|Stock en unidades y USD.">HU-PPTO-013 · Stock Activo por Producto</option>
+                  <option value="014|Ratio Utilización|4|SEGMENTO, MES, RATIO_UTIL, LIMITE_PROM|Ratio entre 0 y 1.">HU-PPTO-014 · Ratio Utilización</option>
+                  <option value="015|Ratio Morosidad|4|SEGMENTO, MES, RATIO_MOR, CARTERA_USD|Ratio entre 0 y 1.">HU-PPTO-015 · Ratio Morosidad</option>
+                  <option value="016|Ratio Rentabilidad|5|PRODUCTO, MES, INGRESOS, COSTOS, MARGEN|Margen = Ingresos - Costos.">HU-PPTO-016 · Ratio Rentabilidad</option>
+                  <option value="017|Stock Inactivo|4|PRODUCTO, MES, STOCK_INACT, DIAS_INACT|Días inactivos entero positivo.">HU-PPTO-017 · Stock Inactivo</option>
+                  <option value="018|Proyección Cierre Año|6|PRODUCTO, MES_REAL, MES_PPTO, VAR_ABS, VAR_PCT, TENDENCIA|Comparativo real vs presupuesto.">HU-PPTO-018 · Proyección Cierre Año</option>
+                </optgroup>
+              </select>
+              <div class="info-panel" id="info-panel" style="display:none">
+                <div class="info-panel-title">Descripción del tipo</div>
+                <div class="info-panel-body" id="info-desc"></div>
+                <div style="margin-top:8px;font-size:11px;color:var(--mid);font-weight:500">Columnas requeridas:</div>
+                <div class="info-panel-cols" id="info-cols"></div>
+                <div style="margin-top:8px;font-size:11px;color:var(--dark)" id="info-rule"></div>
+              </div>
+              <div class="btn-row">
+                <button class="btn-next" onclick="goStep(2)" id="btn-step1">
+                  Continuar
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+                </button>
+              </div>
+            </div>
+            <div class="card">
+              <div class="card-title" style="font-size:13px;margin-bottom:16px">Cargas recientes</div>
+              <div class="stat-grid">
+                <div class="stat-box"><div class="stat-label">Esta sesión</div><div class="stat-value">0</div></div>
+                <div class="stat-box"><div class="stat-label">Este mes</div><div class="stat-value">24</div></div>
+              </div>
+              <div style="font-size:11px;font-weight:600;color:var(--mid);letter-spacing:.5px;text-transform:uppercase;margin-bottom:10px">Últimas cargas</div>
+              <div class="history-item">
+                <div class="history-icon">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                </div>
+                <div style="flex:1">
+                  <div class="history-code">HU-PPTO-001</div>
+                  <div class="history-time">Hace 2 min · 1,247 reg.</div>
+                </div>
+                <span style="font-size:10px;background:#EAF5EF;color:var(--success);padding:2px 6px;border-radius:3px;font-weight:500">OK</span>
+              </div>
+              <div class="history-item">
+                <div class="history-icon">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                </div>
+                <div style="flex:1">
+                  <div class="history-code">HU-PPTO-005</div>
+                  <div class="history-time">Hace 1 hora · 843 reg.</div>
+                </div>
+                <span style="font-size:10px;background:#EAF5EF;color:var(--success);padding:2px 6px;border-radius:3px;font-weight:500">OK</span>
+              </div>
+              <div class="history-item">
+                <div class="history-icon">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                </div>
+                <div style="flex:1">
+                  <div class="history-code">HU-PPTO-012</div>
+                  <div class="history-time">Ayer · 312 reg.</div>
+                </div>
+                <span style="font-size:10px;background:#FDF0EF;color:var(--error);padding:2px 6px;border-radius:3px;font-weight:500">ERR</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── PASO 2: CARGA ── -->
+        <div class="step-panel" id="panel-2">
+          <div class="content-grid">
+            <div class="card">
+              <div class="card-title">Carga del archivo</div>
+              <div class="card-sub" id="p2-sub">Suba el archivo Excel con los datos del presupuesto seleccionado</div>
+              <div class="upload-zone" id="upload-zone" onclick="simulateUpload()">
+                <div class="upload-zone-icon">
+                  <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/></svg>
+                </div>
+                <div class="upload-zone-title">Arrastre su archivo aquí o haga clic para seleccionar</div>
+                <div class="upload-zone-sub">Formatos aceptados: .xlsx, .xls · Tamaño máximo: 10 MB</div>
+              </div>
+              <div class="upload-preview" id="upload-preview">
+                <div style="color:var(--success);font-size:22px">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+                </div>
+                <div style="flex:1">
+                  <div class="upload-file-name" id="up-filename">presupuesto_ventas_001_mayo2026.xlsx</div>
+                  <div class="upload-file-meta">47.3 KB · Cargado 14:31:52 ECT</div>
+                </div>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--success)" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><polyline points="20 6 9 17 4 12"/></svg>
+              </div>
+              <button class="btn-template" onclick="showToast('Plantilla descargada: plantilla_HU-PPTO-001.xlsx')">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                Descargar plantilla vacía
+              </button>
+              <div class="btn-row">
+                <button class="btn-back" onclick="goStep(1)">← Volver</button>
+                <button class="btn-next" onclick="goStep(3)" id="btn-step2" style="opacity:.4;pointer-events:none">
+                  Validar archivo
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+                </button>
+              </div>
+            </div>
+            <div class="card">
+              <div style="font-size:13px;font-weight:600;color:var(--dark);margin-bottom:12px">Instrucciones</div>
+              <div style="font-size:12px;color:var(--mid);line-height:1.8">
+                <div style="margin-bottom:8px;display:flex;gap:8px;align-items:flex-start">
+                  <span style="color:var(--primary);font-weight:600;flex-shrink:0">1.</span>
+                  Descargue la plantilla vacía si aún no tiene el archivo listo.
+                </div>
+                <div style="margin-bottom:8px;display:flex;gap:8px;align-items:flex-start">
+                  <span style="color:var(--primary);font-weight:600;flex-shrink:0">2.</span>
+                  Complete todas las columnas requeridas sin modificar encabezados.
+                </div>
+                <div style="margin-bottom:8px;display:flex;gap:8px;align-items:flex-start">
+                  <span style="color:var(--primary);font-weight:600;flex-shrink:0">3.</span>
+                  Guarde el archivo en formato .xlsx antes de subir.
+                </div>
+                <div style="display:flex;gap:8px;align-items:flex-start">
+                  <span style="color:var(--primary);font-weight:600;flex-shrink:0">4.</span>
+                  Haga clic en la zona de carga o arrastre el archivo.
+                </div>
+              </div>
+              <div style="margin-top:20px;padding:12px;background:var(--light);border-radius:4px;font-size:11px;color:var(--mid)">
+                <strong style="color:var(--dark);display:block;margin-bottom:4px">Tipo seleccionado</strong>
+                <span id="p2-tipo" style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--secondary)">—</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── PASO 3: VALIDACIÓN ── -->
+        <div class="step-panel" id="panel-3">
+          <div class="content-grid">
+            <div class="card">
+              <div class="card-title">Resultados de validación</div>
+              <div class="card-sub">Verificación automática del contenido del archivo</div>
+              <div class="val-ok" id="val-ok">
+                <div class="val-header">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--success)" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><polyline points="20 6 9 17 4 12"/></svg>
+                  <span class="val-title-ok">Archivo válido — sin errores detectados</span>
+                </div>
+                <table class="val-table">
+                  <tr><td>Tipo</td><td id="v-tipo">Base Ventas Completo Zona Socio (HU-PPTO-001)</td></tr>
+                  <tr><td>Registros</td><td class="ok">1,247 filas procesadas</td></tr>
+                  <tr><td>Columnas</td><td class="ok" id="v-cols">6 / 6 requeridas ✓</td></tr>
+                  <tr><td>Cuadre</td><td class="ok">Σ PPTO = 100.00% ✓</td></tr>
+                  <tr><td>Duplicados</td><td class="ok">0 encontrados ✓</td></tr>
+                  <tr><td>Archivo</td><td style="font-family:'IBM Plex Mono',monospace;font-size:11px">presupuesto_ventas_001_mayo2026.xlsx</td></tr>
+                </table>
+              </div>
+              <div class="val-err" id="val-err">
+                <div class="val-header">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--error)" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                  <span class="val-title-err">Se encontraron problemas — corrija y vuelva a cargar</span>
+                </div>
+                <table class="err-table">
+                  <thead><tr><th>Fila</th><th>Columna</th><th>Error detectado</th></tr></thead>
+                  <tbody>
+                    <tr><td>14</td><td>PCT_DIST</td><td>Valor fuera de rango (1.23 > 1.00)</td></tr>
+                    <tr><td>87</td><td>ZONA</td><td>Valor vacío — campo requerido</td></tr>
+                    <tr><td>203</td><td>MES</td><td>Formato incorrecto (esperado: MM/YYYY)</td></tr>
+                  </tbody>
+                </table>
+              </div>
+              <div class="btn-row">
+                <button class="btn-back" onclick="goStep(2)">← Volver</button>
+                <button class="btn-outline-pri" onclick="toggleValError()" style="margin-right:auto;margin-left:0;font-size:11px">Simular error ↕</button>
+                <button class="btn-next" id="btn-confirmar" onclick="goStep(4)">
+                  Confirmar carga
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+                </button>
+              </div>
+            </div>
+            <div class="card">
+              <div style="font-size:13px;font-weight:600;color:var(--dark);margin-bottom:12px">Resumen de validación</div>
+              <div class="stat-grid">
+                <div class="stat-box"><div class="stat-label">Filas totales</div><div class="stat-value">1,247</div></div>
+                <div class="stat-box"><div class="stat-label">Errores</div><div class="stat-value" id="v-err-count" style="color:var(--success)">0</div></div>
+              </div>
+              <div style="font-size:12px;color:var(--mid);line-height:1.7;margin-top:8px">
+                Si el archivo es válido puede proceder a confirmar la carga. El proceso enviará el archivo por SFTP y disparará el job en SAP DS.
+              </div>
+              <div style="margin-top:14px;padding:10px 12px;background:var(--light);border-radius:4px;border-left:3px solid var(--primary);font-size:11px;color:var(--dark)">
+                <strong style="display:block;margin-bottom:3px;color:var(--primary)">Destino SFTP</strong>
+                <span style="font-family:'IBM Plex Mono',monospace">/pptoscomerciales/2026/</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── PASO 4: CONFIRMACIÓN ── -->
+        <div class="step-panel" id="panel-4">
+          <div class="content-grid">
+            <div class="card">
+              <div class="card-title">Carga confirmada</div>
+              <div class="card-sub">El proceso se completó exitosamente</div>
+              <div class="seal">
+                <div class="seal-header">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#4CAF82" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><polyline points="20 6 9 17 4 12"/></svg>
+                  <span class="seal-header-text">CARGA REGISTRADA EXITOSAMENTE</span>
+                </div>
+                <div class="seal-body">
+                  <div class="seal-row">
+                    <span class="seal-label">Tipo de presupuesto</span>
+                    <span class="seal-value" id="s-tipo">Base Ventas Completo Zona Socio<br><span style="font-size:11px;color:var(--mid);font-family:'IBM Plex Mono',monospace">HU-PPTO-001</span></span>
+                  </div>
+                  <div class="seal-row">
+                    <span class="seal-label">Registros cargados</span>
+                    <span class="seal-value ok">1,247</span>
+                  </div>
+                  <div class="seal-row">
+                    <span class="seal-label">SFTP destino</span>
+                    <span class="seal-value mono">/pptoscomerciales/2026/</span>
+                  </div>
+                  <div class="seal-row">
+                    <span class="seal-label">Job SAP DS</span>
+                    <span class="seal-value ok">DISPARADO ✓</span>
+                  </div>
+                  <div class="seal-divider"></div>
+                  <div class="seal-row">
+                    <span class="seal-label">ID de carga</span>
+                    <span class="seal-value mono" id="s-id">PSTOS-2026-05-29-001247-A</span>
+                  </div>
+                  <div class="seal-row">
+                    <span class="seal-label">Fecha y hora</span>
+                    <span class="seal-value mono" id="s-ts">—</span>
+                  </div>
+                  <div class="seal-row">
+                    <span class="seal-label">Usuario</span>
+                    <span class="seal-value mono">planeacion</span>
+                  </div>
+                  <div class="seal-footer-row">
+                    <span class="seal-cert">Diners Club Ecuador · DCELIP</span>
+                    <span class="seal-stamp">
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                      Proceso certificado
+                    </span>
+                  </div>
+                </div>
+              </div>
+              <div class="btn-row">
+                <button class="btn-outline-pri" onclick="goStep(1);resetWizard()">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:-1px;margin-right:4px"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                  Nueva carga
+                </button>
+                <button class="btn-next" onclick="showToast('Comprobante descargado: PSTOS-2026-05-29-001247-A.pdf')">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                  Descargar comprobante
+                </button>
+              </div>
+            </div>
+            <div class="card">
+              <div style="font-size:13px;font-weight:600;color:var(--dark);margin-bottom:12px">Estadísticas de sesión</div>
+              <div class="stat-grid">
+                <div class="stat-box"><div class="stat-label">Esta sesión</div><div class="stat-value">1</div></div>
+                <div class="stat-box"><div class="stat-label">Este mes</div><div class="stat-value">25</div></div>
+              </div>
+              <div style="font-size:11px;font-weight:600;color:var(--mid);letter-spacing:.5px;text-transform:uppercase;margin-bottom:10px;margin-top:16px">Historial de sesión</div>
+              <div class="history-item">
+                <div class="history-icon">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                </div>
+                <div style="flex:1">
+                  <div class="history-code" id="s-hist-code">HU-PPTO-001</div>
+                  <div class="history-time" id="s-hist-time">Hace un momento · 1,247 reg.</div>
+                </div>
+                <span style="font-size:10px;background:#EAF5EF;color:var(--success);padding:2px 6px;border-radius:3px;font-weight:500">OK</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /main-body -->
+    </div><!-- /app-main -->
+  </div><!-- /app-layout -->
+</div><!-- /screen-app -->
+
+<!-- TOAST -->
+<div class="toast" id="toast">
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+  <span id="toast-msg"></span>
+</div>
+
+<script>
+var currentStep=1;
+var selectedPsto={code:'',name:'',cols:0};
+var fileLoaded=false;
+var valError=false;
+
+function doLogin(){
+  var u=document.getElementById('l-user').value.trim();
+  var p=document.getElementById('l-pass').value.trim();
+  var err=document.getElementById('login-error');
+  if(u==='planeacion'&&p==='pstos2026'){
+    err.style.display='none';
+    document.getElementById('screen-login').classList.remove('active');
+    document.getElementById('screen-app').classList.add('active');
+  } else {
+    err.style.display='flex';
+  }
+}
+
+document.getElementById('l-pass').addEventListener('keydown',function(e){
+  if(e.key==='Enter') doLogin();
+});
+document.getElementById('l-user').addEventListener('keydown',function(e){
+  if(e.key==='Enter') doLogin();
+});
+
+function doLogout(){
+  document.getElementById('screen-app').classList.remove('active');
+  document.getElementById('screen-login').classList.add('active');
+  resetWizard();
+  goStep(1);
+}
+
+function onSelectPsto(){
+  var sel=document.getElementById('psto-select');
+  var val=sel.value;
+  var panel=document.getElementById('info-panel');
+  if(!val){panel.style.display='none';selectedPsto={code:'',name:'',cols:0};return;}
+  var parts=val.split('|');
+  selectedPsto={code:parts[0],name:parts[1],cols:parseInt(parts[2]),colList:parts[3],rule:parts[4]};
+  document.getElementById('info-desc').textContent=parts[1]+' — '+parts[2]+' columnas requeridas';
+  var colsDiv=document.getElementById('info-cols');
+  colsDiv.innerHTML='';
+  parts[3].split(', ').forEach(function(c){
+    var tag=document.createElement('span');
+    tag.className='col-tag';
+    tag.textContent=c;
+    colsDiv.appendChild(tag);
+  });
+  document.getElementById('info-rule').textContent='⚑ '+parts[4];
+  panel.style.display='block';
+}
+
+function goStep(n){
+  if(n===2&&!selectedPsto.code){
+    showToast('Seleccione un tipo de presupuesto para continuar');return;
+  }
+  if(n===3&&!fileLoaded){
+    showToast('Primero cargue un archivo Excel');return;
+  }
+  currentStep=n;
+  document.querySelectorAll('.step-panel').forEach(function(p){p.classList.remove('active')});
+  document.getElementById('panel-'+n).classList.add('active');
+  updateStepper(n);
+  updateHeaderStatus(n);
+  if(n===2){
+    document.getElementById('p2-sub').textContent='Suba el archivo para: '+selectedPsto.name;
+    document.getElementById('p2-tipo').textContent='HU-PPTO-'+selectedPsto.code+' · '+selectedPsto.name;
+    var upf=document.getElementById('up-filename');
+    upf.textContent='presupuesto_ventas_'+selectedPsto.code+'_mayo2026.xlsx';
+  }
+  if(n===3){
+    document.getElementById('v-tipo').textContent=selectedPsto.name+' (HU-PPTO-'+selectedPsto.code+')';
+    document.getElementById('v-cols').textContent=selectedPsto.cols+' / '+selectedPsto.cols+' requeridas ✓';
+  }
+  if(n===4){
+    var now=new Date();
+    var pad=function(x){return String(x).padStart(2,'0')};
+    var ts=now.getFullYear()+'-'+pad(now.getMonth()+1)+'-'+pad(now.getDate())+'  '+pad(now.getHours())+':'+pad(now.getMinutes())+':'+pad(now.getSeconds())+' (ECT)';
+    document.getElementById('s-ts').textContent=ts;
+    var id='PSTOS-'+now.getFullYear()+'-'+pad(now.getMonth()+1)+'-'+pad(now.getDate())+'-001247-A';
+    document.getElementById('s-id').textContent=id;
+    var stipoEl=document.getElementById('s-tipo');
+    stipoEl.innerHTML=selectedPsto.name+'<br><span style="font-size:11px;color:var(--mid);font-family:\'IBM Plex Mono\',monospace">HU-PPTO-'+selectedPsto.code+'</span>';
+    document.getElementById('s-hist-code').textContent='HU-PPTO-'+selectedPsto.code;
+  }
+}
+
+function updateStepper(active){
+  var labels=['Selección','Carga','Validación','Confirmación'];
+  for(var i=1;i<=4;i++){
+    var c=document.getElementById('sc'+i);
+    var n=document.getElementById('sn'+i);
+    if(i<active){
+      c.className='step-circle done';
+      c.innerHTML='<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>';
+      n.className='step-name done';
+    } else if(i===active){
+      c.className='step-circle active';
+      c.textContent=i;
+      n.className='step-name active';
+    } else {
+      c.className='step-circle pending';
+      c.textContent=i;
+      n.className='step-name pending';
+    }
+    if(i<4){
+      document.getElementById('sl'+i).className='step-line'+(i<active?' done':'');
+    }
+  }
+}
+
+function updateHeaderStatus(n){
+  var labels=['Paso 1 de 4 — Selección','Paso 2 de 4 — Carga','Paso 3 de 4 — Validación','Paso 4 de 4 — Confirmación'];
+  document.getElementById('header-status').textContent=labels[n-1];
+}
+
+function simulateUpload(){
+  fileLoaded=true;
+  document.getElementById('upload-preview').classList.add('visible');
+  document.getElementById('upload-zone').style.borderColor='var(--success)';
+  document.getElementById('upload-zone').style.background='#F0F9F5';
+  var btn=document.getElementById('btn-step2');
+  btn.style.opacity='1';
+  btn.style.pointerEvents='auto';
+  showToast('Archivo cargado correctamente');
+}
+
+function toggleValError(){
+  valError=!valError;
+  document.getElementById('val-ok').style.display=valError?'none':'block';
+  document.getElementById('val-err').style.display=valError?'block':'none';
+  document.getElementById('v-err-count').textContent=valError?'3':'0';
+  document.getElementById('v-err-count').style.color=valError?'var(--error)':'var(--success)';
+  document.getElementById('btn-confirmar').style.opacity=valError?'.4':'1';
+  document.getElementById('btn-confirmar').style.pointerEvents=valError?'none':'auto';
+}
+
+function resetWizard(){
+  fileLoaded=false;valError=false;
+  selectedPsto={code:'',name:'',cols:0};
+  document.getElementById('psto-select').value='';
+  document.getElementById('info-panel').style.display='none';
+  document.getElementById('upload-preview').classList.remove('visible');
+  document.getElementById('upload-zone').style.borderColor='';
+  document.getElementById('upload-zone').style.background='';
+  document.getElementById('btn-step2').style.opacity='.4';
+  document.getElementById('btn-step2').style.pointerEvents='none';
+  document.getElementById('val-ok').style.display='block';
+  document.getElementById('val-err').style.display='none';
+  document.getElementById('v-err-count').textContent='0';
+  document.getElementById('v-err-count').style.color='var(--success)';
+  document.getElementById('btn-confirmar').style.opacity='1';
+  document.getElementById('btn-confirmar').style.pointerEvents='auto';
+}
+
+function showToast(msg){
+  var t=document.getElementById('toast');
+  document.getElementById('toast-msg').textContent=msg;
+  t.classList.add('show');
+  setTimeout(function(){t.classList.remove('show')},2800);
+}
+
+updateStepper(1);
+</script>
+</body>
+</html>
