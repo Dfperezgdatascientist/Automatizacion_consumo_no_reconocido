@@ -7,7 +7,7 @@ SELECT * FROM DWH_PRESTAGE.Actualizar_Junio01;
 -- Tabla creada para el proceso
 select * from DWH_TEMP.Base_Cruce_Decision 
 
--- Inserción de los datos a la tabla final
+-- Inserciï¿½n de los datos a la tabla final
 
 DELETE FROM DWH_TEMP.Base_Cruce_Decision;
 
@@ -59,17 +59,17 @@ CONTRACARGADO
 DEBITO NEGOCIOS
 REINGRESADO
 CONSUMO REVERSADO
-EXTEMPORÁNEO CLIENTE
-EXTEMPORÁNEO GXC
+EXTEMPORï¿½NEO CLIENTE
+EXTEMPORï¿½NEO GXC
 
 -- Abrir DI en el repositorio DI_PRESTAGE Proyecto: PreStageSharePoint el  JOB: AUTOSERVICIO_CARGA_DECISION00_J y ejecutarlo
 
--- Atualización en SQL SERVER
+-- Atualizaciï¿½n en SQL SERVER
 
--- Solo para los que no tienen decisión.
+-- Solo para los que no tienen decisiï¿½n.
 SELECT * FROM DBO.AUTOSERVICIO_CONSUMOS_NO_RECONOCIDO_DECISION
 
--- NOTA: DECIR QUE SOLAMENTE NOS ENVIEN LOS QUE NO TIENEN DECISIÓN
+-- NOTA: DECIR QUE SOLAMENTE NOS ENVIEN LOS QUE NO TIENEN DECISIï¿½N
 
 select
  A.nvarchar7 , B.decision,A.datetime1,A.datetime2,A.datetime3
@@ -82,7 +82,7 @@ and tp_DeleteTransactionId = 0x
 --AND A.nvarchar7 IS NULL
 
 
--- Solo para los que tienen decisión.
+-- Solo para los que tienen decisiï¿½n.
 UPDATE A
 SET A.nvarchar7 = B.decision
 FROM SharePoint_Content_0225f25502fe4672816c5c7d7d8ebc0c.dbo.AllUserData A
@@ -102,6 +102,24 @@ and tp_DeleteTransactionId = 0x
 AND B.FECHA_DECISION_PREVIA<>NULL
 --AND A.nvarchar7 IS NULL
 
+UPDATE A
+SET A.datetime2 = B.FECHA_CONTRACARGO
+FROM SharePoint_Content_0225f25502fe4672816c5c7d7d8ebc0c.dbo.AllUserData A
+JOIN Mantenimiento_UGI.DBO.AUTOSERVICIO_CONSUMOS_NO_RECONOCIDO_DECISION B
+    ON A.tp_ID = B.tp_ID
+where tp_ListId = 'f547c185-e2aa-4bf9-9de6-0c42850b7004'
+and tp_DeleteTransactionId = 0x
+AND B.FECHA_CONTRACARGO<>NULL
+
+UPDATE A
+SET A.datetime3 = B.FECHA_DECISION_DEFINITIVA
+FROM SharePoint_Content_0225f25502fe4672816c5c7d7d8ebc0c.dbo.AllUserData A
+JOIN Mantenimiento_UGI.DBO.AUTOSERVICIO_CONSUMOS_NO_RECONOCIDO_DECISION B
+    ON A.tp_ID = B.tp_ID
+where tp_ListId = 'f547c185-e2aa-4bf9-9de6-0c42850b7004'
+and tp_DeleteTransactionId = 0x
+AND B.FECHA_DECISION_DEFINITIVA<>NULL
+
 --- En Teradata
 
 SELECT A.IdRegistro,A.DecisionFinal,B.DecisionFinal
@@ -109,9 +127,9 @@ FROM DWH_DINERS.BASE_CONSUMOS_NO_RECONOCIDOS_FINAL AS A
 INNER JOIN  DWH_TEMP.Base_Cruce_Decision B
   ON A.IdRegistro = B.IdRegistro;
   
--- Actualizo las que ya tienen decisión final
+-- Actualizo las que ya tienen decisiï¿½n final
 
-
+---Desicionfinal
 UPDATE DWH_DINERS.BASE_CONSUMOS_NO_RECONOCIDOS_FINAL AS A
 SET DecisionFinal = (
     SELECT B.DecisionFinal
@@ -122,7 +140,53 @@ WHERE EXISTS (
     SELECT 1
     FROM DWH_TEMP.Base_Cruce_Decision AS B
     WHERE B.IdRegistro = A.IdRegistro 
-) AND DecisionFinal IS NOT NULL;
+    AND B.DecisionFinal IS NOT NULL
+) AND DecisionFinal IS NULL;
+
+---Fecha_decision_previa
+UPDATE DWH_DINERS.BASE_CONSUMOS_NO_RECONOCIDOS_FINAL AS A
+SET FECHA_DECISION_PREVIA = (
+    SELECT B.FECHA_DECISION_PREVIA
+    FROM DWH_TEMP.Base_Cruce_Decision AS B
+    WHERE B.IdRegistro = A.IdRegistro
+)
+WHERE EXISTS (
+    SELECT 2
+    FROM DWH_TEMP.Base_Cruce_Decision AS B
+    WHERE B.IdRegistro = A.IdRegistro 
+    AND B.FECHA_DECISION_PREVIA IS NOT NULL
+) AND FECHA_DECISION_PREVIA IS NULL;
+
+---Fecha_contracargo
+UPDATE DWH_DINERS.BASE_CONSUMOS_NO_RECONOCIDOS_FINAL AS A
+SET FECHA_CONTRACARGO = (
+    SELECT B.FECHA_CONTRACARGO
+    FROM DWH_TEMP.Base_Cruce_Decision AS B
+    WHERE B.IdRegistro = A.IdRegistro
+)
+WHERE EXISTS (
+    SELECT 3
+    FROM DWH_TEMP.Base_Cruce_Decision AS B
+    WHERE B.IdRegistro = A.IdRegistro
+    AND B.FECHA_CONTRACARGO IS NOT NULL 
+) AND FECHA_CONTRACARGO IS NULL;
+
+---Fecha_decision_definitiva
+UPDATE DWH_DINERS.BASE_CONSUMOS_NO_RECONOCIDOS_FINAL AS A
+SET FECHA_DECISION_DEFINITIVA = (
+    SELECT B.FECHA_DECISION_DEFINITIVA
+    FROM DWH_TEMP.Base_Cruce_Decision AS B
+    WHERE B.IdRegistro = A.IdRegistro
+)
+WHERE EXISTS (
+    SELECT 1
+    FROM DWH_TEMP.Base_Cruce_Decision AS B
+    WHERE B.IdRegistro = A.IdRegistro
+    AND B.FECHA_DECISION_DEFINITIVA IS NOT NULL  -- solo si B tiene valor
+)
+AND A.FECHA_DECISION_DEFINITIVA IS NULL;  -- solo si A estÃ¡ vacÃ­o
+
+
 
 select * from DWH_DINERS.BASE_CONSUMOS_NO_RECONOCIDOS_FINAL where IdRegistro in (99180)
 

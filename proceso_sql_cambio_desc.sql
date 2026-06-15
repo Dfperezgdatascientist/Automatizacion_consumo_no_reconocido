@@ -2,7 +2,7 @@
 
 
 -- Tabla creada para importar el archivo 5.188
-SELECT * FROM DWH_PRESTAGE.Actualizar_Mayo05;
+SELECT * FROM DWH_PRESTAGE.Actualizar_Junio01;
 
 -- Tabla creada para el proceso
 select * from DWH_TEMP.Base_Cruce_Decision 
@@ -25,7 +25,7 @@ SELECT DISTINCT
     FECHA_DECISION_PREVIA,
     FECHA_CONTRACARGO,
     FECHA_DECISION_DEFINITIVA 
-FROM DWH_PRESTAGE.Actualizar_Mayo12;
+FROM DWH_PRESTAGE.Actualizar_Junio01;
 
 
 -- Revisar duplicados
@@ -38,7 +38,7 @@ group by IdRegistro
 having count(*)>1;
 
 select count(*) NUMERO, DECISIONFINAL DECISION from DWH_TEMP.Base_Cruce_Decision
-group by DECISIONFINAL
+group by DECISIONFINAL;
 
 DEBITO COMERCIO
 DUPLICADO
@@ -63,7 +63,13 @@ EXTEMPORÁNEO CLIENTE
 EXTEMPORÁNEO GXC
 
 -- Abrir DI en el repositorio DI_PRESTAGE Proyecto: PreStageSharePoint el  JOB: AUTOSERVICIO_CARGA_DECISION00_J y ejecutarlo
-
+#sql('srvsharepnt16_MantUGI','UPDATE A
+#SET A.nvarchar7 = B.decision
+#FROM SharePoint_Content_0225f25502fe4672816c5c7d7d8ebc0c.dbo.AllUserData A
+#JOIN DBO.AUTOSERVICIO_CONSUMOS_NO_RECONOCIDO_DECISION B
+#   ON A.tp_ID = B.tp_ID
+#where tp_ListId = \'f547c185-e2aa-4bf9-9de6-0c42850b7004\'
+#and tp_DeleteTransactionId = 0x');
 -- Atualización en SQL SERVER
 
 -- Solo para los que no tienen decisión.
